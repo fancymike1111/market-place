@@ -1,0 +1,50 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+<meta charset="UTF-8"/>
+<meta name="viewport" content="width=device-width, initial-scale=1.0"/>
+<title>Upload Product</title>
+<link rel="stylesheet" href="styles.css"/>
+</head>
+<body>
+
+<header>
+  <h1>Upload Product</h1>
+  <nav>
+    <a href="marketplace.html">Marketplace</a>
+    <a href="profile.html">Profile</a>
+    <a href="#" id="cartToggle">🛒 (<span id="cartCount">0</span>)</a>
+  </nav>
+</header>
+
+<main>
+  <div class="form-card">
+    <h2>Add New Product</h2>
+    <form id="uploadForm">
+      <input type="text" id="productName" placeholder="Product Name" required />
+      <input type="number" id="productPrice" placeholder="Price" required />
+      <input type="text" id="productImage" placeholder="Image URL" required />
+      <button type="submit">Add Product</button>
+    </form>
+  </div>
+</main>
+
+<div class="footer">© 2025 DE-Marketplace</div>
+
+<script>
+const uploadForm=document.getElementById('uploadForm');
+uploadForm.addEventListener('submit',e=>{
+  e.preventDefault();
+  const name=document.getElementById('productName').value.trim();
+  const price=parseFloat(document.getElementById('productPrice').value);
+  const image=document.getElementById('productImage').value.trim();
+  if(!name||!price||!image){alert('Fill all fields');return;}
+  const products=JSON.parse(localStorage.getItem('products')||'[]');
+  products.push({name,price,image});
+  localStorage.setItem('products',JSON.stringify(products));
+  alert('Product added.');
+  window.location.href='marketplace.html';
+});
+</script>
+</body>
+</html>

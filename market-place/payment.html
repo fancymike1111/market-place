@@ -1,0 +1,132 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+<meta charset="utf-8"/>
+<meta name="viewport" content="width=device-width,initial-scale=1"/>
+<title>Payment</title>
+<link rel="stylesheet" href="styles.css" />
+<script src="https://www.paypal.com/sdk/js?client-id=sb&currency=USD"></script>
+</head>
+<body>
+
+<header style="display:flex;justify-content:space-between;align-items:center;">
+  <h1>Payment</h1>
+  <button onclick="location.href='marketplace.html'">Exit</button>
+</header>
+
+<main>
+  <div class="form-card">
+    <h2>Cart Summary</h2>
+    <ul id="summaryItems"></ul>
+    <p>Total: $<span id="summaryTotal">0.00</span></p>
+
+    <h3 style="margin-top:12px">Payment Method</h3>
+    <div style="display:flex;gap:8px;justify-content:center;margin-bottom:8px;">
+      <label><input type="radio" name="payMethod" value="card" checked> Card</label>
+      <label><input type="radio" name="payMethod" value="paypal"> PayPal</label>
+    </div>
+
+    <form id="cardForm">
+      <input id="cardName" placeholder="Cardholder name" required />
+      <input id="cardNumber" placeholder="Card number (16 digits)" maxlength="16" required />
+      <div style="display:flex;gap:8px;">
+        <select id="expiryMonth"><option value="">Month</option>
+          <option>1</option><option>2</option><option>3</option><option>4</option><option>5</option><option>6</option>
+          <option>7</option><option>8</option><option>9</option><option>10</option><option>11</option><option>12</option>
+        </select>
+        <select id="expiryYear"><option value="">Year</option>
+          <option>2025</option><option>2026</option><option>2027</option><option>2028</option><option>2029</option>
+        </select>
+      </div>
+      <input id="cvv" placeholder="CVV" maxlength="3" required />
+      <button type="button" id="payNowBtn">Pay Now</button>
+    </form>
+
+    <div id="paypalContainer" style="display:none;margin-top:12px;">
+      <div id="paypalButtons"></div>
+      <p style="font-size:0.85rem;color:#aaa;">(PayPal sandbox)</p>
+    </div>
+  </div>
+</main>
+
+<footer class="footer">© 2025 Marketplace Website</footer>
+
+<script>
+let cart = JSON.parse(localStorage.getItem('cart') || '[]');
+if(cart.length === 0){ alert('Your cart is empty.'); window.location.href='marketplace.html'; }
+const summaryItems = document.getElementById('summaryItems');
+const summaryTotal = document.getElementById('summaryTotal');
+function renderSummary(){
+  summaryItems.innerHTML = '';
+  let total = 0;
+  cart.forEach(it=>{
+    const li = document.createElement('li');
+    li.textContent = `${it.name} x${it.quantity} - $${(it.price*it.quantity).toFixed(2)}`;
+    summaryItems.appendChild(li);
+    total += it.price * it.quantity;
+  });
+  summaryTotal.textContent = total.toFixed(2);
+}
+renderSummary();
+
+/* toggle card/paypal UI */
+const payMethodRadios = document.querySelectorAll('input[name="payMethod"]');
+const cardForm = document.getElementById('cardForm');
+const paypalContainer = document.getElementById('paypalContainer');
+function onMethodChange(){
+  const method = document.querySelector('input[name="payMethod"]:checked').value;
+  if(method === 'paypal'){ cardForm.style.display = 'none'; paypalContainer.style.display = 'block'; }
+  else { cardForm.style.display = 'block'; paypalContainer.style.display = 'none'; }
+}
+payMethodRadios.forEach(r => r.addEventListener('change', onMethodChange));
+onMethodChange();
+
+/* Save order helper */
+function saveOrder(paymentMethod, paymentRef){
+  const profiles = JSON.parse(localStorage.getItem('userProfiles') || '{}');
+  const current = localStorage.getItem('currentUserEmail');
+  const total = cart.reduce((s,i)=>s+i.price*i.quantity,0);
+  const order = { id: 'ORD-' + Date.now(), date: new Date().toLocaleString(), items: cart, total, method: paymentMethod, ref: paymentRef || null };
+  if(current && profiles[current]){
+    profiles[current].orderHistory = profiles[current].orderHistory || [];
+    profiles[current].orderHistory.unshift(order);
+    localStorage.setItem('userProfiles', JSON.stringify(profiles));
+  }
+  localStorage.removeItem('cart'); cart = [];
+}
+
+/* Card simulated payment */
+document.getElementById('payNowBtn').addEventListener('click', ()=>{
+  const cardName = document.getElementById('cardName').value.trim();
+  const cardNumber = document.getElementById('cardNumber').value.trim();
+  const expiryMonth = document.getElementById('expiryMonth').value;
+  const expiryYear = document.getElementById('expiryYear').value;
+  const cvv = document.getElementById('cvv').value.trim();
+  if(!cardName || !cardNumber || !expiryMonth || !expiryYear || !cvv){ alert('Fill card fields'); return; }
+  if(cardNumber.length !== 16){ alert('Card must be 16 digits'); return; }
+  if(cvv.length !== 3){ alert('CVV must be 3 digits'); return; }
+
+  saveOrder('Card', 'SIM-' + Date.now());
+  alert('Payment successful (Card). Redirecting to marketplace.');
+  window.location.href = 'marketplace.html';
+});
+
+/* PayPal Buttons (sandbox) */
+paypal.Buttons({
+  createOrder: function(data, actions){
+    const total = cart.reduce((s,i)=>s+i.price*i.quantity,0).toFixed(2);
+    return actions.order.create({ purchase_units:[{ amount:{ value: total } }] });
+  },
+  onApprove: function(data, actions){
+    return actions.order.capture().then(function(details){
+      saveOrder('PayPal', details.id || data.orderID);
+      alert('Payment successful via PayPal. Redirecting to marketplace.');
+      window.location.href = 'marketplace.html';
+    });
+  },
+  onError: function(err){ console.error(err); alert('PayPal error'); }
+}).render('#paypalButtons');
+
+</script>
+</body>
+</html>

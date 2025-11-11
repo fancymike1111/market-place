@@ -1,0 +1,108 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+<meta charset="UTF-8" />
+<meta name="viewport" content="width=device-width, initial-scale=1.0" />
+<title>DE-Marketplace</title>
+<link rel="stylesheet" href="styles.css" />
+</head>
+<body class="dark-theme">
+
+<header>
+  <h1>@ ichufe-Marketplace</h1>
+  <nav>
+    <a href="marketplace.html">Marketplace</a>
+    <a href="profile.html" id="profileLink">Profile</a>
+    <a href="upload.html">Upload Product</a>
+    <a href="login.html">Login</a>
+    <a href="#" id="cartToggle">🛒 (<span id="cartCount">0</span>)</a>
+  </nav>
+</header>
+
+<main>
+  <div class="slideshow-container">
+    <div class="slide">
+      <img src="images/3214-0-792-1736-8416-6312-1132.png" alt="Slide 1">
+      <div class="slide-caption">Discover Amazing Products</div>
+    </div>
+    <div class="slide">
+      <img src="images/blue-cart.avif" alt="Slide 2">
+      <div class="slide-caption">Great Deals Every Day</div>
+    </div>
+    <div class="slide">
+      <img src="images/cart-photo.jpg" alt="Slide 3">
+      <div class="slide-caption">Check Out New Arrivals</div>
+    </div>
+
+  
+</div>
+
+  </div>
+
+  <section style="text-align:center;padding:30px;">
+    <h2>Buy & Sell with Ease</h2>
+    <p>Browse great items or post your own for sale.</p>
+    <button onclick="location.href='marketplace.html'">Start Shopping</button>
+  </section>
+</main>
+
+<div id="cartSidebar" class="cart-sidebar">
+  <h3>Your Cart <button class="close-cart" id="closeCartBtn">✕</button></h3>
+  <ul id="cartItems" class="cart-items-list"></ul>
+  <p>Total: $<span id="cartTotal">0.00</span></p>
+  <button id="checkoutBtn">Checkout</button>
+</div>
+
+<footer class="footer">© 2025 DE-Marketplace</footer>
+
+<script>
+// slideshow
+let slideIndex=0; showSlides();
+function showSlides(){
+  let slides=document.getElementsByClassName('slide');
+  for(let i=0;i<slides.length;i++){slides[i].style.display='none';}
+  slideIndex++; if(slideIndex>slides.length){slideIndex=1;}
+  slides[slideIndex-1].style.display='block';
+  setTimeout(showSlides,4000);
+}
+
+// --- CART SHARED LOGIC (same as marketplace) ---
+const cartToggle=document.getElementById('cartToggle');
+const cartSidebar=document.getElementById('cartSidebar');
+const closeCartBtn=document.getElementById('closeCartBtn');
+const cartItemsElm=document.getElementById('cartItems');
+const cartTotalElm=document.getElementById('cartTotal');
+const cartCountElm=document.getElementById('cartCount');
+const checkoutBtn=document.getElementById('checkoutBtn');
+
+let cart=JSON.parse(localStorage.getItem('cart'))||[];
+
+function updateCart(){
+  cartItemsElm.innerHTML='';
+  let total=0;
+  cart.forEach((item,idx)=>{
+    total+=item.price*item.quantity;
+    const li=document.createElement('li');
+    li.innerHTML=`
+      <div><strong>${item.name}</strong> x${item.quantity}</div>
+      <div>$${(item.price*item.quantity).toFixed(2)}</div>
+    `;
+    cartItemsElm.appendChild(li);
+  });
+  cartTotalElm.textContent=total.toFixed(2);
+  cartCountElm.textContent=cart.reduce((s,i)=>s+i.quantity,0);
+  localStorage.setItem('cart',JSON.stringify(cart));
+}
+updateCart();
+
+cartToggle.addEventListener('click',()=>cartSidebar.classList.toggle('open'));
+closeCartBtn.addEventListener('click',()=>cartSidebar.classList.remove('open'));
+
+checkoutBtn.addEventListener('click',()=>{
+  if(cart.length===0){alert('Cart empty');return;}
+  if(localStorage.getItem('loggedIn')!=='true'){ alert('Please login first.'); window.location.href='login.html'; return; }
+  window.location.href='payment.html';
+});
+</script>
+</body>
+</html>

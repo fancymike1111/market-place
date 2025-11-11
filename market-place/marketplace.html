@@ -1,0 +1,219 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+<meta charset="UTF-8" />
+<meta name="viewport" content="width=device-width, initial-scale=1.0" />
+<title>Marketplace</title>
+<link rel="stylesheet" href="styles.css" />
+</head>
+
+<body class="dark-theme">
+
+<button class="theme-toggle" onclick="toggleTheme()">Switch Theme</button>
+
+<header>
+  <h1>Marketplace</h1>
+  <nav>
+    <a href="index.html" class="nav-link">Home</a>
+    <a href="upload.html" class="nav-link">Upload Product</a>
+    <a href="#" id="cartToggle" class="nav-link">🛒 Cart (<span id="cartCount">0</span>)</a>
+  </nav>
+</header>
+
+<main>
+
+<h2>Available Products</h2>
+
+<div class="search-bar">
+  <input type="text" id="searchInput" placeholder="Search products..." />
+</div>
+
+<div class="product-grid" id="productGrid">
+
+  <!-- Example Product Cards -->
+  <div class="product-card">
+    <img src="images/Apple-iPhone-17-Pro.jpg" alt="Product Image" />
+    <h3>Apple-iphone17 pro</h3>
+    <p>$2000</p>
+    <button class="add-to-cart">Add to Cart</button>
+  </div>
+
+
+<div class="product-card">
+    <img src="images/gaming laptop.jpg" alt="Product Image" />
+    <h3> &#128125; Alien Ware-16gb</h3>
+    <p>$2500</p>
+    <button class="add-to-cart">Add to Cart</button>
+  </div>
+
+
+
+  <div class="product-card">
+    <img src="images/ipad.webp" alt="Product Image" />
+    <h3>i-Pad</h3>
+    <p>$1700</p>
+    <button class="add-to-cart">Add to Cart</button>
+  </div>
+
+
+ <div class="product-card">
+    <img src="images/washing machine.jpg" alt="Product Image" />
+    <h3>Washing-Machine</h3>
+    <p>$1000</p>
+    <button class="add-to-cart">Add to Cart</button>
+  </div>
+
+   <div class="product-card">
+    <img src="images/juicer.jpeg" alt="Product Image" />
+    <h3>Juicer</h3>
+    <p>$300</p>
+    <button class="add-to-cart">Add to Cart</button>
+  </div>
+
+ 
+
+</div>
+
+</main>
+
+<!-- ✅ CART SLIDE OUT -->
+<div id="cartSidebar" class="cart-sidebar">
+  <div class="cart-header">
+    <h3>Your Cart</h3>
+    <button id="closeCart" class="close-cart-btn">✖</button>
+  </div>
+
+  <ul id="cartItems"></ul>
+  <p>Total: $<span id="cartTotal">0.00</span></p>
+
+  <button id="checkoutBtn">Checkout</button>
+</div>
+
+<footer>
+  <p>© 2025 DE-Marketplace</p>
+</footer>
+
+<script>
+// Theme
+function toggleTheme(){
+  document.body.classList.toggle('bright-theme');
+  document.body.classList.toggle('dark-theme');
+}
+
+// Search Filter
+const searchInput=document.getElementById('searchInput');
+const productGrid=document.getElementById('productGrid');
+const productCards=productGrid.getElementsByClassName('product-card');
+
+searchInput.addEventListener('keyup',function(){
+  const filter=searchInput.value.toLowerCase();
+  for(let i=0;i<productCards.length;i++){
+    const title=productCards[i].querySelector('h3').textContent.toLowerCase();
+    productCards[i].style.display = title.includes(filter) ? '' : 'none';
+  }
+});
+
+// CART SYSTEM
+let cart = JSON.parse(localStorage.getItem("cart")) || [];
+
+const cartToggle = document.getElementById("cartToggle");
+const cartSidebar = document.getElementById("cartSidebar");
+const closeCart = document.getElementById("closeCart");
+const cartItems = document.getElementById("cartItems");
+const cartTotal = document.getElementById("cartTotal");
+const checkoutBtn = document.getElementById("checkoutBtn");
+const cartCount = document.getElementById("cartCount");
+
+// Open / Close Cart
+cartToggle.onclick = () => cartSidebar.classList.add("open");
+closeCart.onclick = () => cartSidebar.classList.remove("open");
+
+// Add to Cart
+document.querySelectorAll(".add-to-cart").forEach(btn => {
+  btn.addEventListener("click", () => {
+    const card = btn.parentElement;
+    const name = card.querySelector("h3").innerText;
+    const price = parseFloat(card.querySelector("p").innerText.replace("$", ""));
+    const image = card.querySelector("img").src;
+
+    const existing = cart.find(item => item.name === name);
+
+    if(existing){
+      existing.quantity++;
+    } else {
+      cart.push({ name, price, image, quantity: 1 });
+    }
+
+    saveCart();
+    updateCartDisplay();
+  });
+});
+
+// Update Display
+function updateCartDisplay(){
+  cartItems.innerHTML = "";
+  let total = 0;
+
+  cart.forEach((item, index) => {
+    total += item.price * item.quantity;
+    const li = document.createElement("li");
+    li.innerHTML = `
+      <img src="${item.image}" width="60" style="border-radius:5px;"> <br>
+      ${item.name} <br> $${item.price.toFixed(2)}
+      <br>
+      Qty:
+      <button onclick="changeQty(${index}, -1)">-</button>
+      ${item.quantity}
+      <button onclick="changeQty(${index}, 1)">+</button>
+      <br>
+      <button onclick="removeItem(${index})" style="margin-top:5px;">Remove</button>
+      <hr>
+    `;
+    cartItems.appendChild(li);
+  });
+
+  cartTotal.innerText = total.toFixed(2);
+  saveCart();
+}
+
+function changeQty(index, change){
+  cart[index].quantity += change;
+  if(cart[index].quantity <= 0) cart.splice(index, 1);
+  updateCartDisplay();
+}
+
+function removeItem(index){
+  if(confirm("Remove this product?")){
+    cart.splice(index, 1);
+    updateCartDisplay();
+  }
+}
+
+function saveCart(){
+  localStorage.setItem("cart", JSON.stringify(cart));
+  cartCount.innerText = cart.reduce((sum, item) => sum + item.quantity, 0);
+}
+
+updateCartDisplay();
+
+// marketplace.html - checkout button
+
+checkoutBtn.onclick = () => {
+    const user = JSON.parse(localStorage.getItem("loggedInUser"));
+    if(!user){
+        // Save redirect target so we know to go to payment after login
+        localStorage.setItem("postLoginRedirect", "payment.html");
+        alert("You must log in before checkout.");
+        window.location.href = "login.html";
+    } else if(cart.length === 0){
+        alert("Your cart is empty.");
+    } else {
+        window.location.href = "payment.html";
+    }
+};
+
+
+</script>
+
+</body>
+</html>

@@ -1,0 +1,70 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+<meta charset="UTF-8">
+<title>My Profile</title>
+<link rel="stylesheet" href="styles.css">
+</head>
+
+<body class="dark-theme">
+
+<header>
+  <h1>My Profile</h1>
+  <nav>
+    <a href="index.html">Home</a>
+    <a href="marketplace.html">Marketplace</a>
+    <a href="upload.html">Upload Product</a>
+  </nav>
+</header>
+
+<main class="profile-container">
+  <img id="profileImage" class="profile-pic" src="" alt="Profile Picture">
+
+  <h2 id="displayUsername"></h2>
+  <p id="displayEmail"></p>
+
+  <label class="upload-btn">
+    Change Picture
+    <input type="file" id="imageUpload" accept="image/*" hidden>
+  </label>
+
+  <button id="logoutBtn" class="logout-btn">Logout</button>
+</main>
+
+<script>
+window.onload = function() {
+    const user = JSON.parse(localStorage.getItem("loggedInUser"));
+    if(!user){ 
+        alert("You must log in first.");
+        location.href = "login.html";
+        return;
+    }
+
+    document.getElementById("displayUsername").innerText = user.username;
+    document.getElementById("displayEmail").innerText = user.email;
+
+    const savedPic = user.profilePic || "default-profile.png";
+    document.getElementById("profileImage").src = savedPic;
+
+    document.getElementById("imageUpload").addEventListener("change", function(e){
+        const file = e.target.files[0];
+        if(file){
+            const reader = new FileReader();
+            reader.onload = function(event){
+                user.profilePic = event.target.result;
+                localStorage.setItem("loggedInUser", JSON.stringify(user));
+                document.getElementById("profileImage").src = user.profilePic;
+            };
+            reader.readAsDataURL(file);
+        }
+    });
+
+    document.getElementById("logoutBtn").addEventListener("click", function(){
+        localStorage.removeItem("loggedInUser");
+        location.href = "login.html";
+    });
+};
+</script>
+
+</body>
+</html>

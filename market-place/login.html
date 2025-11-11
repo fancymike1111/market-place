@@ -1,0 +1,63 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+<meta charset="utf-8"/>
+<meta name="viewport" content="width=device-width,initial-scale=1"/>
+<title>Login</title>
+<link rel="stylesheet" href="styles.css" />
+</head>
+<body>
+
+<header style="display:flex;justify-content:space-between;align-items:center;">
+  <h1>Login</h1>
+  <button onclick="location.href='marketplace.html'">Exit</button>
+</header>
+
+<main>
+  <div class="form-card">
+    <h2>Login or Create Account</h2>
+    <form id="loginForm">
+      <input type="email" id="email" placeholder="Email" required />
+      <input type="text" id="name" placeholder="Full Name" required />
+      <input type="password" id="password" placeholder="Password" required />
+      <button type="submit">Login / Create</button>
+    </form>
+    <p style="margin-top:8px;color:#aaa;font-size:0.9rem;"></p>
+  </div>
+</main>
+
+<footer class="footer">© 2025 Marketplace Website</footer>
+
+<script>
+const loginForm = document.getElementById("loginForm");
+loginForm.addEventListener("submit", function(e){
+    e.preventDefault();
+
+    const email = document.getElementById("email").value;
+    const username = document.getElementById("username") ? document.getElementById("username").value : email;
+
+    // Save logged-in user in localStorage
+    localStorage.setItem("loggedInUser", JSON.stringify({ username, email, orders: [] }));
+
+    // Check if there is a post-login redirect
+    const redirect = localStorage.getItem("postLoginRedirect");
+    if(redirect){
+        localStorage.removeItem("postLoginRedirect"); // clear it
+        window.location.href = redirect; // redirect to payment page
+    } else {
+        window.location.href = "marketplace.html"; // default if no redirect
+    }
+});
+
+
+// Example login success
+localStorage.setItem("loggedInUser", JSON.stringify({
+    username: document.getElementById("username").value,
+    email: document.getElementById("email").value,
+    profilePic: localStorage.getItem("profilePic") || "default-profile.png"
+}));
+
+
+</script>
+</body>
+</html>

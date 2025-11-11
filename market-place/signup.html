@@ -1,0 +1,49 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+<meta charset="utf-8"/>
+<meta name="viewport" content="width=device-width,initial-scale=1"/>
+<title>Sign Up</title>
+<link rel="stylesheet" href="styles.css" />
+</head>
+<body>
+
+<header style="display:flex;justify-content:space-between;align-items:center;">
+  <h1>Create Account</h1>
+  <button onclick="location.href='marketplace.html'">Exit</button>
+</header>
+
+<main>
+  <div class="form-card">
+    <h2>Sign Up</h2>
+    <form id="signupForm">
+      <input type="text" id="s_name" placeholder="Full Name" required />
+      <input type="email" id="s_email" placeholder="Email" required />
+      <input type="password" id="s_password" placeholder="Password" required />
+      <button type="submit">Create Account</button>
+    </form>
+  </div>
+</main>
+
+<footer class="footer">© 2025 Marketplace Website</footer>
+
+<script>
+const signupForm = document.getElementById('signupForm');
+signupForm.addEventListener('submit', e => {
+  e.preventDefault();
+  const name = document.getElementById('s_name').value.trim();
+  const email = document.getElementById('s_email').value.trim().toLowerCase();
+  const password = document.getElementById('s_password').value;
+  if(!name || !email || !password){ alert('Fill all fields'); return; }
+  const profiles = JSON.parse(localStorage.getItem('userProfiles') || '{}');
+  if(profiles[email]){ alert('Account exists. Please login.'); window.location.href='login.html'; return; }
+  profiles[email] = { name, email, password, orderHistory: [] };
+  localStorage.setItem('userProfiles', JSON.stringify(profiles));
+  localStorage.setItem('loggedIn', 'true');
+  localStorage.setItem('currentUserEmail', email);
+  alert('Account created and logged in.');
+  window.location.href = 'marketplace.html';
+});
+</script>
+</body>
+</html>
